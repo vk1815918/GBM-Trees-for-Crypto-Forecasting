@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import IndicatorImplementation as ii
 import matplotlib.pyplot as plt
-# import mplfinance as fplt
 import yfinance as yf
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import classification_report
@@ -12,21 +11,13 @@ class crypto_data_analysis:
 
     def retrieve_btcusdt_file():
         print("in retrieve_btcusdt_file")
-        btcusdt = pd.read_csv(r"C:\Users\vkotr\Python Projects\FinancialProjects\Crypto Trading\btcusdt.csv", index_col=0)
+        btcusdt = pd.read_csv(r"PUT_YOUR_FILE_PATH_HERE", index_col=0)
         btcusdt.rename(columns={btcusdt.columns[0]: 'dates'}, inplace=True)
         btcusdt['dates'] = pd.to_datetime(btcusdt['dates'])
         btcusdt.set_index('dates', inplace=True)
         btcusdt.drop('Close Time', axis=1, inplace=True)
 
-        # btcusdt = btcusdt.resample('D').agg({
-        #     'Open': 'first',
-        #     'High': 'max',
-        #     'Low': 'min',
-        #     'Close': 'last',
-        #     'Volume': 'sum'
-        # })
-
-        btcusdt = btcusdt.iloc[:10000]
+        btcusdt = btcusdt.iloc[:10000] # This is just to make the process run faster. You can run the whole dataset if you would like.
 
         return btcusdt
     
@@ -39,36 +30,6 @@ class crypto_data_analysis:
         data = ii.Indicators.oscilators(data=data)
 
         return data
-
-    def correlation(data):
-        # data = pd.DataFrame()
-
-        corr_matrix = data.corr()
-
-        # Fill the diagonal elements with zero
-        np.fill_diagonal(corr_matrix.values, 0)
-
-        print(corr_matrix)
-        print(corr_matrix['Close'])
-
-        inverse_corr = corr_matrix['Close'].loc[corr_matrix['Close'] < 0].index
-        corr = corr_matrix['Close'].loc[corr_matrix['Close'] > 0.2].index
-
-        # Get a one-dimensional array of the correlation coefficients
-        corr_array = corr_matrix.values.flatten()
-
-        # # Plot the histogram of the correlation coefficients
-        # plt.hist(corr_array, bins=1000)
-
-        # # Add a title and labels
-        # plt.title("Histogram of Correlation Coefficients")
-        # plt.xlabel("Correlation Coefficient")
-        # plt.ylabel("Frequency")
-
-        # # Show the plot
-        # plt.show()
-
-        return inverse_corr.values, corr.values
 
     def ml(df):
         df["target"] = (df["Close"] < df["Close"].shift(-1)).astype(int)
@@ -98,28 +59,31 @@ class crypto_data_analysis:
 
         df = crypto_data_analysis.applyIndicators(df)
 
-        # inv, corr = crypto_data_analysis.correlation(df)
-
         df.dropna(inplace=True, axis=0)
 
         crypto_data_analysis.ml(df)
 
-        # print(df)
 
 crypto_data_analysis.run_it()
     
 
 '''
 
-Put all the techincal indicators like last time.
 
-add the on-chain data
+This is the file which houses the main functions. A brief explanation of what the functions do: retrieve_btcusdt_file() 
 
-and then do a df.corr
+retrieves the file which has the minutely bitcoin OHLCV data which you run this on. I higly recommed you get this data from
 
-and do extremes, most corr uncorr
+Binance Historical Data site: "https://www.binance.com/en/landing/data". Go to the Kline option and download the SPOT option 
 
-see how they work out
+with whatever timeframe you want. 
+
+
+Applyindicators simply get the indicators that are stored in the IndicatorImplementation.
+
+ml is the funciton that splits the data for the GBM and runs it.
+
+run_it is the function that compiles all the functions and runs them in order for you.
 
 
 '''
